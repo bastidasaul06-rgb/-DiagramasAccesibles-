@@ -83,9 +83,12 @@ class PropertiesPanel(wx.Panel):
             self._node.label = self._label_ctrl.GetValue()
             canvas = self._parent_frame.canvas
             canvas.refresh()
-            wx.Accessible.NotifyEvent(
-                wx.ACC_EVENT_OBJECT_NAMECHANGE, canvas, wx.OBJID_CLIENT, wx.ACC_SELF
-            )
+            try:
+                wx.Accessible.NotifyEvent(
+                    wx.ACC_EVENT_OBJECT_NAMECHANGE, canvas, wx.OBJID_CLIENT, wx.ACC_SELF
+                )
+            except Exception:
+                pass
 
     def focus_widget(self):
         if self.IsShown():

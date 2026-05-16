@@ -158,9 +158,10 @@ class DiagramController:
             if can_exit:
                 frame = self.canvas.GetParent()
                 if hasattr(frame, "cycle_area"):
-                    frame.cycle_area(forward=not event.ShiftDown())
+                    wx.CallAfter(frame.cycle_area, forward=not event.ShiftDown())
                 return
-            self._notify_focus()
+            if idx >= 0:
+                self._notify_focus()
             self.canvas.refresh()
             self._update_status_bar()
 
@@ -217,6 +218,8 @@ class DiagramController:
                 fn.y += dy
                 self.canvas.refresh()
                 self._notify_move(key, step, fn)
+            else:
+                event.Skip()
 
         elif key == ord('P') and event.ControlDown():
             self._announce_position()
@@ -225,6 +228,8 @@ class DiagramController:
             fn = self.focus_manager.focused_node
             if fn:
                 self._begin_edit_label(fn)
+            else:
+                event.Skip()
 
         else:
             event.Skip()
@@ -241,9 +246,12 @@ class DiagramController:
         self.canvas.refresh()
         self._update_status_bar()
         if to_delete:
-            wx.Accessible.NotifyEvent(
-                wx.ACC_EVENT_OBJECT_DESTROY, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
-            )
+            try:
+                wx.Accessible.NotifyEvent(
+                    wx.ACC_EVENT_OBJECT_DESTROY, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
+                )
+            except Exception:
+                pass
 
     def select_all(self):
         for node in self.model.nodes:
@@ -294,9 +302,12 @@ class DiagramController:
             if new_label:
                 node.label = new_label
                 self.canvas.refresh()
-                wx.Accessible.NotifyEvent(
-                    wx.ACC_EVENT_OBJECT_NAMECHANGE, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
-                )
+                try:
+                    wx.Accessible.NotifyEvent(
+                        wx.ACC_EVENT_OBJECT_NAMECHANGE, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
+                    )
+                except Exception:
+                    pass
         dlg.Destroy()
 
     def _hit_node(self, mx: float, my: float) -> Optional[NodeModel]:
@@ -308,9 +319,12 @@ class DiagramController:
     def _notify_focus(self):
         fm = self.focus_manager
         child_id = fm.focused_index + 1 if fm.focused_index >= 0 else wx.ACC_SELF
-        wx.Accessible.NotifyEvent(
-            wx.ACC_EVENT_OBJECT_FOCUS, self.canvas, wx.OBJID_CLIENT, child_id
-        )
+        try:
+            wx.Accessible.NotifyEvent(
+                wx.ACC_EVENT_OBJECT_FOCUS, self.canvas, wx.OBJID_CLIENT, child_id
+            )
+        except Exception:
+            pass
 
     def _notify_move(self, key: int, step: int, node: NodeModel):
         dirs = {
@@ -325,9 +339,12 @@ class DiagramController:
         if hasattr(frame, "SetStatusText"):
             frame.SetStatusText(text)
         _speak(text)
-        wx.Accessible.NotifyEvent(
-            wx.ACC_EVENT_OBJECT_LOCATIONCHANGE, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
-        )
+        try:
+            wx.Accessible.NotifyEvent(
+                wx.ACC_EVENT_OBJECT_LOCATIONCHANGE, self.canvas, wx.OBJID_CLIENT, wx.ACC_SELF
+            )
+        except Exception:
+            pass
 
     def _announce_position(self):
         fn = self.focus_manager.focused_node
@@ -343,9 +360,12 @@ class DiagramController:
     def _notify_state_change(self):
         fm = self.focus_manager
         child_id = fm.focused_index + 1 if fm.focused_index >= 0 else wx.ACC_SELF
-        wx.Accessible.NotifyEvent(
-            wx.ACC_EVENT_OBJECT_STATECHANGE, self.canvas, wx.OBJID_CLIENT, child_id
-        )
+        try:
+            wx.Accessible.NotifyEvent(
+                wx.ACC_EVENT_OBJECT_STATECHANGE, self.canvas, wx.OBJID_CLIENT, child_id
+            )
+        except Exception:
+            pass
 
     def _update_status_bar(self):
         frame = self.canvas.GetParent()
