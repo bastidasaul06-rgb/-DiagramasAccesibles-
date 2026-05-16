@@ -17,10 +17,6 @@ Desarrollada en Python con wxPython, pensada desde cero para que una persona cie
 - Zoom y cuadrícula
 - Plantillas predefinidas
 
-## Descarga
-
-El ejecutable compilado está disponible en [Internet Archive](https://archive.org/details/...).
-
 ## Requisitos
 
 - Windows 10 o superior (64 bits)
@@ -45,11 +41,6 @@ Ver la guía de uso completa en `guia_de_uso.txt`.
 pip install -r requirements.txt
 ```
 
-### Compilar ejecutable
-
-```
-build.bat
-```
 
 ## Licencia
 
