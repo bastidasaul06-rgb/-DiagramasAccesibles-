@@ -19,7 +19,7 @@ class CanvasAccessible(wx.Accessible):
         return self._canvas.model
 
     def GetChildCount(self):
-        return len(self._model.nodes)
+        return (wx.ACC_OK, len(self._model.nodes))
 
     def GetChild(self, childId):
         if 1 <= childId <= len(self._model.nodes):
