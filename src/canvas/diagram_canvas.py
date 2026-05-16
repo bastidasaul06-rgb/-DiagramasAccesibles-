@@ -97,6 +97,7 @@ class DiagramCanvas(wx.Window):
         self.model.nodes.clear()
         self.model.edges.clear()
         self.controller.focus_manager.clear()
+        self.controller.undo_manager.clear()
         self._render()
         self.Refresh()
 

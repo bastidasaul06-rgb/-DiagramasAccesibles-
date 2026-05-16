@@ -26,6 +26,8 @@ ID_OPEN = wx.ID_OPEN
 ID_SAVE = wx.ID_SAVE
 ID_SAVEAS = wx.ID_SAVEAS
 ID_EXIT = wx.ID_EXIT
+ID_UNDO = wx.ID_UNDO
+ID_REDO = wx.ID_REDO
 ID_DELETE = wx.ID_DELETE
 ID_SELECTALL = wx.ID_SELECTALL
 ID_ZOOM_IN = wx.NewIdRef()
@@ -103,6 +105,9 @@ class MainFrame(wx.Frame):
         menu_bar.Append(file_menu, "&Archivo")
 
         edit_menu = wx.Menu()
+        edit_menu.Append(ID_UNDO, "&Deshacer\tCtrl+Z", "Deshacer la ultima accion")
+        edit_menu.Append(ID_REDO, "&Rehacer\tCtrl+Y", "Rehacer la accion deshecha")
+        edit_menu.AppendSeparator()
         edit_menu.Append(ID_DELETE, "&Eliminar\tSupr", "Eliminar el nodo seleccionado")
         edit_menu.Append(ID_SELECTALL, "Seleccionar &todo\tCtrl+E", "Seleccionar todos los nodos")
         menu_bar.Append(edit_menu, "&Editar")
@@ -135,6 +140,8 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self._on_save, id=ID_SAVE)
         self.Bind(wx.EVT_MENU, self._on_save_as, id=ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self._on_exit, id=ID_EXIT)
+        self.Bind(wx.EVT_MENU, self._on_undo, id=ID_UNDO)
+        self.Bind(wx.EVT_MENU, self._on_redo, id=ID_REDO)
         self.Bind(wx.EVT_MENU, self._on_delete, id=ID_DELETE)
         self.Bind(wx.EVT_MENU, self._on_select_all, id=ID_SELECTALL)
         self.Bind(wx.EVT_MENU, self._on_zoom_in, id=ID_ZOOM_IN)
@@ -228,6 +235,14 @@ class MainFrame(wx.Frame):
 
     def _on_exit(self, event):
         self.Close()
+
+    def _on_undo(self, event):
+        if self.canvas.IsShown():
+            self.canvas.controller.undo()
+
+    def _on_redo(self, event):
+        if self.canvas.IsShown():
+            self.canvas.controller.redo()
 
     def _on_delete(self, event):
         if self.canvas.IsShown():

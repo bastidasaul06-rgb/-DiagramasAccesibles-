@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from src.canvas.diagram_canvas import DiagramCanvas
 
 from src.canvas.diagram_model import DiagramModel, NodeModel, EdgeModel
+from src.canvas.undo_manager import UndoManager
 from src.accessibility.focus_manager import FocusManager
 
 
@@ -31,6 +32,8 @@ class DiagramController:
         self.model = model
         self.canvas = canvas
         self.focus_manager = FocusManager(model)
+
+        self.undo_manager = UndoManager(model)
 
         self._dragging: bool = False
         self._drag_node: Optional[NodeModel] = None
@@ -58,7 +61,28 @@ class DiagramController:
         if self._connect_mode_callback:
             self._connect_mode_callback()
 
+    def undo(self):
+        if not self.undo_manager.undo():
+            _speak("Nada que deshacer")
+            return
+        self.focus_manager.clear()
+        self.canvas.refresh()
+        self._notify_selection()
+        self._update_status_bar()
+        _speak("Cambio deshecho")
+
+    def redo(self):
+        if not self.undo_manager.redo():
+            _speak("Nada que rehacer")
+            return
+        self.focus_manager.clear()
+        self.canvas.refresh()
+        self._notify_selection()
+        self._update_status_bar()
+        _speak("Cambio rehecho")
+
     def _perform_connect(self, source: NodeModel, target: NodeModel):
+        self.undo_manager.snapshot()
         self.model.deselect_all()
         edge = EdgeModel(source.id, target.id)
         self.model.add_edge(edge)
@@ -111,6 +135,7 @@ class DiagramController:
             if not event.ControlDown():
                 self.model.deselect_all()
             clicked.selected = True
+            self.undo_manager.snapshot()
             self._dragging = True
             self._drag_node = clicked
             self._drag_offset_x = mx - clicked.x
@@ -211,6 +236,7 @@ class DiagramController:
         elif key == wx.WXK_UP or key == wx.WXK_DOWN or key == wx.WXK_LEFT or key == wx.WXK_RIGHT:
             fn = self.focus_manager.focused_node
             if fn:
+                self.undo_manager.snapshot()
                 step = MOVE_STEP_FAST if event.ShiftDown() else MOVE_STEP
                 dx = step if key == wx.WXK_RIGHT else (-step if key == wx.WXK_LEFT else 0)
                 dy = step if key == wx.WXK_DOWN else (-step if key == wx.WXK_UP else 0)
@@ -235,6 +261,7 @@ class DiagramController:
             event.Skip()
 
     def delete_selected(self):
+        self.undo_manager.snapshot()
         to_delete = [n for n in self.model.nodes if n.selected]
         for node in to_delete:
             nid = node.id
@@ -264,6 +291,7 @@ class DiagramController:
         self._update_status_bar()
 
     def add_node_at(self, node_type: str, label: str, description: str, x: float, y: float) -> NodeModel:
+        self.undo_manager.snapshot()
         node = NodeModel(node_type, label, x, y, description)
         self.model.add_node(node)
         self.model.deselect_all()
@@ -294,12 +322,14 @@ class DiagramController:
         self.canvas.zoom_fit()
 
     def _begin_edit_label(self, node: NodeModel):
+        old_label = node.label
         dlg = wx.TextEntryDialog(
             self.canvas, "Editar etiqueta del nodo:", "Editar etiqueta", node.label
         )
         if dlg.ShowModal() == wx.ID_OK:
             new_label = dlg.GetValue().strip()
-            if new_label:
+            if new_label and new_label != old_label:
+                self.undo_manager.snapshot()
                 node.label = new_label
                 self.canvas.refresh()
                 try:
