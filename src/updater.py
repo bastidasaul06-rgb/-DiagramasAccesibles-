@@ -33,8 +33,21 @@ class UpdateChecker:
         def _worker():
             try:
                 req = urllib.request.Request(API_URL, headers={"User-Agent": "DiagramasAccesibles"})
-                with urllib.request.urlopen(req, timeout=10) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
+                try:
+                    resp = urllib.request.urlopen(req, timeout=10)
+                except urllib.error.HTTPError as e:
+                    if e.code == 404:
+                        if not silent:
+                            wx.CallAfter(wx.MessageBox,
+                                "No hay ninguna version publicada en GitHub Releases.\n\n"
+                                "Cree un Release con el ejecutable para que el actualizador funcione.",
+                                "Sin actualizaciones", wx.OK | wx.ICON_INFORMATION)
+                    else:
+                        if not silent:
+                            wx.CallAfter(wx.MessageBox,
+                                f"Error del servidor: {e.code}", "Error", wx.OK | wx.ICON_WARNING)
+                    return
+                data = json.loads(resp.read().decode("utf-8"))
                 latest_tag = data.get("tag_name", "")
                 if not latest_tag:
                     return
@@ -50,13 +63,20 @@ class UpdateChecker:
                         exe_asset = asset
                         break
                 if not exe_asset:
+                    if not silent:
+                        wx.CallAfter(wx.MessageBox,
+                            "El release no contiene un archivo .exe.", "Sin actualizacion",
+                            wx.OK | wx.ICON_INFORMATION)
                     return
                 download_url = exe_asset["browser_download_url"]
                 release_notes = data.get("body", "Nueva version disponible.")
                 wx.CallAfter(self._ask_update, latest_tag, download_url, release_notes)
-            except (urllib.error.URLError, json.JSONDecodeError, KeyError):
+            except urllib.error.URLError:
                 if not silent:
-                    wx.CallAfter(wx.MessageBox, "No se pudo verificar actualizaciones. Revise su conexion.", "Error", wx.OK | wx.ICON_WARNING)
+                    wx.CallAfter(wx.MessageBox, "No se pudo conectar a GitHub. Revise su conexion.", "Error", wx.OK | wx.ICON_WARNING)
+            except (json.JSONDecodeError, KeyError):
+                if not silent:
+                    wx.CallAfter(wx.MessageBox, "Respuesta inesperada del servidor.", "Error", wx.OK | wx.ICON_WARNING)
 
         threading.Thread(target=_worker, daemon=True).start()
 
