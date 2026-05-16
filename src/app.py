@@ -397,13 +397,13 @@ class MainFrame(wx.Frame):
         if key == wx.WXK_F6:
             if self.canvas.IsShown():
                 if event.ShiftDown():
-                    wx.CallAfter(self.cycle_area, forward=False)
+                    self.cycle_area(forward=False)
                 else:
-                    wx.CallAfter(self.cycle_area, forward=True)
+                    self.cycle_area(forward=True)
                 return
 
         if key == ord('C') and event.AltDown() and event.ShiftDown():
-            wx.CallAfter(self._on_insert_connection, None)
+            self._on_insert_connection(None)
             return
 
         elif key == wx.WXK_TAB:
@@ -421,17 +421,17 @@ class MainFrame(wx.Frame):
             props_controls = [self.properties_panel._label_ctrl, self.properties_panel._desc_ctrl]
 
             if forward and focused in palette_controls and focused is palette_controls[-1]:
-                wx.CallAfter(self.canvas.SetFocus)
+                self.canvas.SetFocus()
                 return
             if not forward and focused in palette_controls and focused is palette_controls[0]:
-                wx.CallAfter(self.canvas.SetFocus)
+                self.canvas.SetFocus()
                 return
 
             if forward and focused in props_controls and focused is props_controls[-1]:
-                wx.CallAfter(self.cycle_area, forward=True)
+                self.cycle_area(forward=True)
                 return
             if not forward and focused in props_controls and focused is props_controls[0]:
-                wx.CallAfter(self.cycle_area, forward=False)
+                self.cycle_area(forward=False)
                 return
 
             if focused is self.canvas:

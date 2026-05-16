@@ -397,6 +397,9 @@ class DiagramCanvas(wx.Window):
         self._show_grid = show
         self.refresh()
 
+    def focus_widget(self):
+        self.SetFocus()
+
     def _add_test_nodes(self):
         n1 = NodeModel("start", "Inicio", 50, 50)
         n2 = NodeModel("process", "Validar datos", 50, 150)

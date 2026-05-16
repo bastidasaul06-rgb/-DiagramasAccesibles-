@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "wx\core.py", line 3425, in <lambda>
+  File "src\app.py", line 469, in cycle_area
+    ctrl.focus_widget()
+    ^^^^^^^^^^^^^^^^^
+AttributeError: 'DiagramCanvas' object has no attribute 'focus_widget'
