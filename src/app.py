@@ -39,6 +39,7 @@ ID_EXPORT_PNG = wx.NewIdRef()
 ID_EXPORT_SVG = wx.NewIdRef()
 ID_ABOUT = wx.ID_ABOUT
 ID_SHORTCUTS = wx.NewIdRef()
+ID_CHECK_UPDATES = wx.NewIdRef()
 
 
 class MainFrame(wx.Frame):
@@ -80,6 +81,9 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
         self.Bind(wx.EVT_CLOSE, self._on_close)
+
+        from src.updater import UpdateChecker
+        wx.CallLater(3000, UpdateChecker(self).check, True)
         self.Show()
 
     def _create_menu_bar(self):
@@ -119,6 +123,7 @@ class MainFrame(wx.Frame):
 
         help_menu = wx.Menu()
         help_menu.Append(ID_SHORTCUTS, "&Atajos de teclado...\tF1", "Ver atajos de teclado disponibles")
+        help_menu.Append(ID_CHECK_UPDATES, "&Buscar actualizaciones...", "Verificar si hay una nueva version")
         help_menu.AppendSeparator()
         help_menu.Append(ID_ABOUT, "&Acerca de...", "Informacion sobre la aplicacion")
         menu_bar.Append(help_menu, "&Ayuda")
@@ -142,6 +147,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self._on_export_png, id=ID_EXPORT_PNG)
         self.Bind(wx.EVT_MENU, self._on_export_svg, id=ID_EXPORT_SVG)
         self.Bind(wx.EVT_MENU, self._on_shortcuts, id=ID_SHORTCUTS)
+        self.Bind(wx.EVT_MENU, self._on_check_updates, id=ID_CHECK_UPDATES)
         self.Bind(wx.EVT_MENU, self._on_about, id=ID_ABOUT)
 
     def _on_new(self, event):
@@ -352,6 +358,10 @@ class MainFrame(wx.Frame):
         if wx.TheClipboard.Open():
             wx.TheClipboard.SetData(wx.TextDataObject(text))
             wx.TheClipboard.Close()
+
+    def _on_check_updates(self, event):
+        from src.updater import UpdateChecker
+        UpdateChecker(self).check(silent=False)
 
     def _on_about(self, event):
         dlg = wx.Dialog(self, title="Acerca de...", size=(500, 380))
