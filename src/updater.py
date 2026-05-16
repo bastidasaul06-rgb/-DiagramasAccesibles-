@@ -10,7 +10,7 @@ import wx
 
 GITHUB_OWNER = "bastidasaul06-rgb"
 GITHUB_REPO = "-DiagramasAccesibles-"
-CURRENT_VERSION = "1.0"
+CURRENT_VERSION = "v1.0"
 
 API_URL = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
 
