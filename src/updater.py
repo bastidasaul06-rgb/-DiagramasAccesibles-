@@ -39,8 +39,7 @@ class UpdateChecker:
                     if e.code == 404:
                         if not silent:
                             wx.CallAfter(wx.MessageBox,
-                                "No hay ninguna version publicada en GitHub Releases.\n\n"
-                                "Cree un Release con el ejecutable para que el actualizador funcione.",
+                                "No hay actualizaciones disponibles por el momento.",
                                 "Sin actualizaciones", wx.OK | wx.ICON_INFORMATION)
                     else:
                         if not silent:
