@@ -68,8 +68,9 @@ class UpdateChecker:
                             wx.OK | wx.ICON_INFORMATION)
                     return
                 download_url = exe_asset["browser_download_url"]
+                size = exe_asset.get("size", 0)
                 release_notes = data.get("body", "Nueva version disponible.")
-                wx.CallAfter(self._ask_update, latest_tag, download_url, release_notes)
+                wx.CallAfter(self._ask_update, latest_tag, download_url, release_notes, size)
             except urllib.error.URLError:
                 if not silent:
                     wx.CallAfter(wx.MessageBox, "No se pudo conectar a GitHub. Revise su conexion.", "Error", wx.OK | wx.ICON_WARNING)
@@ -79,8 +80,8 @@ class UpdateChecker:
 
         threading.Thread(target=_worker, daemon=True).start()
 
-    def _ask_update(self, tag: str, url: str, notes: str):
-        dlg = UpdateDialog(self._parent, tag, notes)
+    def _ask_update(self, tag: str, url: str, notes: str, size: int = 0):
+        dlg = UpdateDialog(self._parent, tag, notes, size)
         if dlg.ShowModal() == wx.ID_YES:
             self._download_and_install(tag, url)
         dlg.Destroy()
@@ -131,13 +132,27 @@ del "%~f0"
         self._parent.Close()
 
 
+def _format_size(size_bytes: int) -> str:
+    if size_bytes >= 1_000_000_000:
+        return f"{size_bytes / 1_000_000_000:.2f} GB"
+    elif size_bytes >= 1_000_000:
+        return f"{size_bytes / 1_000_000:.2f} MB"
+    elif size_bytes >= 1_000:
+        return f"{size_bytes / 1_000:.2f} KB"
+    return f"{size_bytes} B"
+
+
 class UpdateDialog(wx.Dialog):
-    def __init__(self, parent, tag: str, notes: str):
-        wx.Dialog.__init__(self, parent, title="Actualizacion disponible", size=(450, 350))
+    def __init__(self, parent, tag: str, notes: str, size: int = 0):
+        wx.Dialog.__init__(self, parent, title="Actualizacion disponible", size=(450, 380))
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        msg = f"Version {tag} disponible.\n\nNotas de la version:\n{notes}"
+        size_text = f"Tamaño: {_format_size(size)}" if size else ""
+        msg = f"Version {tag} disponible."
+        if size_text:
+            msg += f"\n{size_text}"
+        msg += f"\n\nNotas de la version:\n{notes}"
         tc = wx.TextCtrl(panel, value=msg, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
                          size=(410, 200))
         vbox.Add(tc, 1, wx.EXPAND | wx.ALL, 10)

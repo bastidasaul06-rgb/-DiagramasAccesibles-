@@ -37,6 +37,7 @@ ID_ZOOM_FIT = wx.NewIdRef()
 ID_TOGGLE_GRID = wx.NewIdRef()
 ID_INSERT_NODE = wx.NewIdRef()
 ID_INSERT_CONNECTION = wx.NewIdRef()
+ID_CONNECT_MODE = wx.NewIdRef()
 ID_EXPORT_PNG = wx.NewIdRef()
 ID_EXPORT_SVG = wx.NewIdRef()
 ID_ABOUT = wx.ID_ABOUT
@@ -115,6 +116,7 @@ class MainFrame(wx.Frame):
         insert_menu = wx.Menu()
         insert_menu.Append(ID_INSERT_NODE, "&Nodo...\tCtrl+Shift+N", "Insertar un nuevo nodo")
         insert_menu.Append(ID_INSERT_CONNECTION, "&Conexion\tAlt+Shift+C", "Conectar el nodo seleccionado con otro")
+        insert_menu.Append(ID_CONNECT_MODE, "Modo &conectar\tCtrl+Shift+C", "Activar modo: clic en origen y clic en destino en el lienzo")
         menu_bar.Append(insert_menu, "&Insertar")
 
         view_menu = wx.Menu()
@@ -151,6 +153,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self._on_toggle_grid, id=ID_TOGGLE_GRID)
         self.Bind(wx.EVT_MENU, self._on_insert_node, id=ID_INSERT_NODE)
         self.Bind(wx.EVT_MENU, self._on_insert_connection, id=ID_INSERT_CONNECTION)
+        self.Bind(wx.EVT_MENU, self._on_connect_mode, id=ID_CONNECT_MODE)
         self.Bind(wx.EVT_MENU, self._on_export_png, id=ID_EXPORT_PNG)
         self.Bind(wx.EVT_MENU, self._on_export_svg, id=ID_EXPORT_SVG)
         self.Bind(wx.EVT_MENU, self._on_shortcuts, id=ID_SHORTCUTS)
@@ -321,6 +324,17 @@ class MainFrame(wx.Frame):
                 if target:
                     ctrl._perform_connect(source, target)
         dlg.Destroy()
+
+    def _on_connect_mode(self, event):
+        if not self.canvas.IsShown():
+            return
+        ctrl = self.canvas.controller
+        if len(ctrl.model.nodes) < 2:
+            wx.MessageBox("Se necesitan al menos 2 nodos.", "Conectar", wx.OK | wx.ICON_INFORMATION)
+            return
+        ctrl.set_connecting(True)
+        _speak("Modo conectar activado. Seleccione el nodo de origen con clic o Enter, luego el nodo de destino.")
+        self.SetStatusText("Modo conectar: seleccione origen y destino en el lienzo")
 
     def _on_connect_mode_changed(self):
         pass
