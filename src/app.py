@@ -11,6 +11,7 @@ from src.panels.node_create_dialog import NodeCreateDialog
 _a11y_output = None
 
 def _speak(text: str):
+    """Envía una frase al lector de pantalla sin interrumpir la app si falla."""
     global _a11y_output
     try:
         if _a11y_output is None:
@@ -85,11 +86,13 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_CHAR_HOOK, self._on_char_hook)
         self.Bind(wx.EVT_CLOSE, self._on_close)
 
+        # Revisión silenciosa de actualizaciones al iniciar.
         from src.updater import UpdateChecker
         wx.CallLater(3000, UpdateChecker(self).check, True)
         self.Show()
 
     def _create_menu_bar(self):
+        """Crea la barra de menús principal y sus eventos."""
         menu_bar = wx.MenuBar()
 
         file_menu = wx.Menu()
@@ -102,12 +105,12 @@ class MainFrame(wx.Frame):
         file_menu.Append(ID_EXPORT_PNG, "Exportar PNG...", "Exportar como imagen PNG")
         file_menu.Append(ID_EXPORT_SVG, "Exportar SVG...", "Exportar como SVG")
         file_menu.AppendSeparator()
-        file_menu.Append(ID_EXIT, "&Salir\tAlt+F4", "Cerrar la aplicacion")
+        file_menu.Append(ID_EXIT, "&Salir\tAlt+F4", "Cerrar la aplicación")
         menu_bar.Append(file_menu, "&Archivo")
 
         edit_menu = wx.Menu()
-        edit_menu.Append(ID_UNDO, "&Deshacer\tCtrl+Z", "Deshacer la ultima accion")
-        edit_menu.Append(ID_REDO, "&Rehacer\tCtrl+Y", "Rehacer la accion deshecha")
+        edit_menu.Append(ID_UNDO, "&Deshacer\tCtrl+Z", "Deshacer la última acción")
+        edit_menu.Append(ID_REDO, "&Rehacer\tCtrl+Y", "Rehacer la acción deshecha")
         edit_menu.AppendSeparator()
         edit_menu.Append(ID_DELETE, "&Eliminar\tSupr", "Eliminar el nodo seleccionado")
         edit_menu.Append(ID_SELECTALL, "Seleccionar &todo\tCtrl+E", "Seleccionar todos los nodos")
@@ -115,7 +118,7 @@ class MainFrame(wx.Frame):
 
         insert_menu = wx.Menu()
         insert_menu.Append(ID_INSERT_NODE, "&Nodo...\tCtrl+Shift+N", "Insertar un nuevo nodo")
-        insert_menu.Append(ID_INSERT_CONNECTION, "&Conexion\tAlt+Shift+C", "Conectar el nodo seleccionado con otro")
+        insert_menu.Append(ID_INSERT_CONNECTION, "&Conexión\tAlt+Shift+C", "Conectar el nodo seleccionado con otro")
         insert_menu.Append(ID_CONNECT_MODE, "Modo &conectar\tCtrl+Shift+C", "Activar modo: clic en origen y clic en destino en el lienzo")
         menu_bar.Append(insert_menu, "&Insertar")
 
@@ -125,14 +128,14 @@ class MainFrame(wx.Frame):
         view_menu.Append(ID_ZOOM_RESET, "Zoom 100%\tCtrl+0", "Restablecer zoom al 100%")
         view_menu.Append(ID_ZOOM_FIT, "Ajustar a ventana\tCtrl+Shift+F", "Ajustar todos los nodos a la ventana")
         view_menu.AppendSeparator()
-        view_menu.Append(ID_TOGGLE_GRID, "&Mostrar cuadricula", "Mostrar u ocultar la cuadricula", wx.ITEM_CHECK)
+        view_menu.Append(ID_TOGGLE_GRID, "&Mostrar cuadrícula", "Mostrar u ocultar la cuadrícula", wx.ITEM_CHECK)
         menu_bar.Append(view_menu, "&Ver")
 
         help_menu = wx.Menu()
         help_menu.Append(ID_SHORTCUTS, "&Atajos de teclado...\tF1", "Ver atajos de teclado disponibles")
-        help_menu.Append(ID_CHECK_UPDATES, "&Buscar actualizaciones...", "Verificar si hay una nueva version")
+        help_menu.Append(ID_CHECK_UPDATES, "&Buscar actualizaciones...", "Verificar si hay una nueva versión")
         help_menu.AppendSeparator()
-        help_menu.Append(ID_ABOUT, "&Acerca de...", "Informacion sobre la aplicacion")
+        help_menu.Append(ID_ABOUT, "&Acerca de...", "Información sobre la aplicación")
         menu_bar.Append(help_menu, "&Ayuda")
 
         self.SetMenuBar(menu_bar)
@@ -213,6 +216,7 @@ class MainFrame(wx.Frame):
     def _do_save(self, as_new=False):
         if not self.canvas.IsShown():
             return
+        # El parámetro as_new se mantiene para compatibilidad con el flujo actual.
         import json
         data = {
             "title": self._diagram_title,
@@ -346,7 +350,7 @@ class MainFrame(wx.Frame):
             "Enter              - Seleccionar/deseleccionar nodo\n"
             "Flechas            - Mover nodo (8px)\n"
             "Shift+Flechas      - Mover nodo (40px)\n"
-            "Ctrl+P             - Anunciar posicion\n"
+            "Ctrl+P             - Anunciar posición\n"
             "F2                 - Editar etiqueta\n"
             "Supr               - Eliminar nodo\n"
             "Escape             - Deseleccionar todo\n"
@@ -357,7 +361,7 @@ class MainFrame(wx.Frame):
             "Ctrl++ / Ctrl+-    - Acercar/Alejar\n"
             "Ctrl+0             - Zoom 100%%\n"
             "Ctrl+Shift+F       - Ajustar a ventana\n"
-            "F6 / Shift+F6      - Cambiar de area (paleta/lienzo/propiedades)\n"
+            "F6 / Shift+F6      - Cambiar de área (paleta/lienzo/propiedades)\n"
             "F1                 - Esta ayuda"
         )
         dlg = wx.Dialog(self, title="Atajos de teclado", size=(500, 420))
@@ -398,7 +402,7 @@ class MainFrame(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         texto = (
-            "Diagramas de Flujo Accesibles - Versión 1.0\n\n"
+            "Diagramas de Flujo Accesibles - Versión 1.1\n\n"
             "Esta aplicación de diagramas de flujo fue desarrollada en Python "
             "con la necesidad de satisfacer la creación de diagramas de flujo "
             "de forma accesible para personas ciegas o con baja visión. "
@@ -480,6 +484,7 @@ class MainFrame(wx.Frame):
         event.Skip()
 
     def cycle_area(self, forward=True):
+        """Mueve el foco entre paleta, lienzo y panel de propiedades."""
         areas = []
         area_names = []
         if self.tool_palette.IsShown():
@@ -506,8 +511,8 @@ class MainFrame(wx.Frame):
         name = area_names[self._current_area]
         ctrl = areas[self._current_area]
         ctrl.focus_widget()
-        _speak(f"Area: {name}")
-        self.SetStatusText(f"Area: {name}")
+        _speak(f"Área: {name}")
+        self.SetStatusText(f"Área: {name}")
 
     def _open_create_node_dialog(self, preselected_type=None):
         if not self.canvas.IsShown():
@@ -586,6 +591,7 @@ class MainFrame(wx.Frame):
 
 class DiagramApp(wx.App):
     def OnInit(self):
+        """Inicializa la app y configura el manejador global de errores."""
         self.SetAppName("DiagramasAccesibles")
         import sys
         sys.excepthook = self._on_unhandled_exception

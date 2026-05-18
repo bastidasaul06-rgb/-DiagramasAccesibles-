@@ -17,11 +17,13 @@ API_URL = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/l
 
 
 def _parse_version(tag: str) -> tuple[int, ...]:
+    """Convierte un tag tipo v1.2.3 en una tupla comparable (1, 2, 3)."""
     nums = re.findall(r"\d+", tag)
     return tuple(int(n) for n in nums) if nums else (0,)
 
 
 def _is_newer(latest_tag: str, current_tag: str) -> bool:
+    """Devuelve True si latest_tag es más nuevo que current_tag."""
     return _parse_version(latest_tag) > _parse_version(current_tag)
 
 
@@ -38,6 +40,7 @@ def _get_app_dir() -> str:
 
 
 def _format_size(size_bytes: int) -> str:
+    """Formatea bytes a KB/MB/GB en un texto corto para mostrar al usuario."""
     if size_bytes >= 1_000_000_000:
         return f"{size_bytes / 1_000_000_000:.2f} GB"
     elif size_bytes >= 1_000_000:
@@ -49,15 +52,15 @@ def _format_size(size_bytes: int) -> str:
 
 class UpdateDialog(wx.Dialog):
     def __init__(self, parent, tag: str, notes: str, size: int = 0):
-        wx.Dialog.__init__(self, parent, title="Actualizacion disponible", size=(450, 380))
+        wx.Dialog.__init__(self, parent, title="Actualización disponible", size=(450, 380))
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         size_text = f"Tamaño: {_format_size(size)}" if size else ""
-        msg = f"Version {tag} disponible."
+        msg = f"Versión {tag} disponible."
         if size_text:
             msg += f"\n{size_text}"
-        msg += f"\n\nNotas de la version:\n{notes}"
+        msg += f"\n\nNotas de la versión:\n{notes}"
         tc = wx.TextCtrl(panel, value=msg, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.TE_RICH2,
                          size=(410, 200))
         vbox.Add(tc, 1, wx.EXPAND | wx.ALL, 10)
@@ -84,11 +87,11 @@ class UpdateDialog(wx.Dialog):
 
 class DownloadDialog(wx.Dialog):
     def __init__(self, parent, tag: str, total_size: int):
-        wx.Dialog.__init__(self, parent, title="Descargando actualizacion", size=(450, 150))
+        wx.Dialog.__init__(self, parent, title="Descargando actualización", size=(450, 150))
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self._label = wx.StaticText(panel, label=f"Descargando version {tag}...")
+        self._label = wx.StaticText(panel, label=f"Descargando versión {tag}...")
         vbox.Add(self._label, 0, wx.ALL, 10)
 
         self._size_label = wx.StaticText(panel, label="0 / " + _format_size(total_size))
@@ -112,6 +115,7 @@ class UpdateChecker:
         self._parent = parent
 
     def check(self, silent: bool = False):
+        """Consulta GitHub Releases en segundo plano y muestra el diálogo si hay nueva versión."""
         def _worker():
             try:
                 req = urllib.request.Request(API_URL, headers={"User-Agent": "DiagramasAccesibles"})
@@ -169,6 +173,7 @@ class UpdateChecker:
         dlg.Destroy()
 
     def _download_and_install(self, tag: str, url: str, total_size: int):
+        """Descarga el ejecutable en segundo plano y actualiza el progreso en tiempo real."""
         dlg = DownloadDialog(self._parent, tag, total_size)
         dlg.Show()
 
@@ -200,6 +205,7 @@ class UpdateChecker:
         threading.Thread(target=_worker, args=(dlg,), daemon=True).start()
 
     def _finish_update(self, new_exe: str):
+        """Aplica la actualización en .exe compilado o informa ruta en modo fuente."""
         if not getattr(sys, 'frozen', False):
             wx.MessageBox(
                 f"Descarga terminada.\nGuardado en: {new_exe}",
@@ -219,8 +225,8 @@ del "%~f0"
         with open(updater_bat, "w") as f:
             f.write(bat_content)
         wx.MessageBox(
-            "Actualizacion descargada. La aplicacion se cerrara para aplicar los cambios.",
-            "Actualizacion", wx.OK | wx.ICON_INFORMATION
+            "Actualización descargada. La aplicación se cerrará para aplicar los cambios.",
+            "Actualización", wx.OK | wx.ICON_INFORMATION
         )
         os.startfile(updater_bat)
         self._parent.Close()
